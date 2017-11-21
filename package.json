@@ -8,5 +8,8 @@
     "nodeunit": "*",
     "request": "*",
     "cheerio": "*"
+  },
+  "devDependencies": {
+    "electron": "1.7.9"
   }
 }
