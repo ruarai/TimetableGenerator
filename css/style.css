@@ -153,8 +153,9 @@ td {
 }
 
 #sorter {
-	margin-left:40px;
+	/*margin-left:40px;
 	float:left;
+	*/
 	text-align:center;
 }
 
@@ -176,3 +177,29 @@ td {
 	margin-left:20px;
 }
 
+#wrapper {
+	margin-left: 650px;
+}
+#content {
+	float: right;
+	width: 100%;
+	min-height: 100%;
+}
+#sidebar {
+	float: left;
+	width: 650px;
+	margin-left: -650px;
+	min-height: 100%;
+}
+#cleared {
+	clear: both;
+}
+
+.padding{
+	padding: 10px;
+}
+
+#subjectList{
+
+	min-height: 150px;
+}

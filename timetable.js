@@ -2,11 +2,11 @@ var times = new Array();
 
 // Build the list:
 var i = 700;
-while(i < 2130) {
+while (i < 2130) {
 	times.push(i);
 
 	i += 15;
-	if(i-Math.floor(i/100)*100 == 60) i += 40;
+	if (i - Math.floor(i / 100) * 100 == 60) i += 40;
 }
 
 var days = new Array(
@@ -18,10 +18,10 @@ var days = new Array(
 );
 
 var colors = new Array(
-	{bg:'c3f84b', txt:'000'},
-	{bg:'ee3378', txt:'FFF'},
-	{bg:'1fafd5', txt:'000'},
-	{bg:'72408d', txt:'FFF'}
+	{ bg: 'c3f84b', txt: '000' },
+	{ bg: 'ee3378', txt: 'FFF' },
+	{ bg: '1fafd5', txt: '000' },
+	{ bg: '72408d', txt: 'FFF' }
 );
 
 var subjectcolors = {};
@@ -34,52 +34,52 @@ var timetables = new Array();
 var subjects = new Array();
 
 function GetPrintTime(t) {
-	var minutes = t%100;
-	var hours = (t-minutes)/100;
+	var minutes = t % 100;
+	var hours = (t - minutes) / 100;
 	var am = "am";
 
 	// Change to pm:
-	if(hours >= 12) {
+	if (hours >= 12) {
 		am = "pm";
 	}
 
 	// no 1300:
-	if(hours > 12) {
+	if (hours > 12) {
 		hours -= 12;
 	}
 
 	// Make it always two digits:
-	if(minutes < 10) {
-		minutes = '0'+minutes;
+	if (minutes < 10) {
+		minutes = '0' + minutes;
 	}
 
 	// Put it all together:
-	return hours+':'+minutes+' '+am;
+	return hours + ':' + minutes + ' ' + am;
 }
 
 var printSort = {
-	L:'Lecture',
-	P:'Practical',
-	S:'Seminar',
-	T:'Tutorial',
-	W:'Workshop',
-	PB:'Problem-based',
-	FW:'Field Work',
-	BI:'Bump-in',
-	BO:'Bump-out',
-	CL:'Clinical Laboratory',
-	CP:'Clinical Placement',
-	CR:'Clinical Practice',
-	CC:'Concert Class',
-	FM:'Filmmaking',
-	IC:'Instrument Class',
-	IP:'Independent Practice',
-	LE:'Large Ensemble',
-	PF:'Performance',
-	PC:'Performance Class',
-	RH:'Rehearsal',
-	SC:'Screening',
-	ST:'Studio'
+	L: 'Lecture',
+	P: 'Practical',
+	S: 'Seminar',
+	T: 'Tutorial',
+	W: 'Workshop',
+	PB: 'Problem-based',
+	FW: 'Field Work',
+	BI: 'Bump-in',
+	BO: 'Bump-out',
+	CL: 'Clinical Laboratory',
+	CP: 'Clinical Placement',
+	CR: 'Clinical Practice',
+	CC: 'Concert Class',
+	FM: 'Filmmaking',
+	IC: 'Instrument Class',
+	IP: 'Independent Practice',
+	LE: 'Large Ensemble',
+	PF: 'Performance',
+	PC: 'Performance Class',
+	RH: 'Rehearsal',
+	SC: 'Screening',
+	ST: 'Studio'
 };
 
 // Returns a user readable sort:
@@ -89,21 +89,21 @@ function GetPrintSort(s) {
 	var sort = s.replace(/[0-9]/g, '');
 	var n = parseInt(s.substr(sort.length));
 
-	return printSort[sort]+' '+n;
+	return printSort[sort] + ' ' + n;
 }
 
 // Returns a readable duration:
 function GetPrintDuration(n) {
-	if(n == 1) {
+	if (n == 1) {
 		return '1 Hour';
 	} else {
-		return n+' Hours';
+		return n + ' Hours';
 	}
 }
 
 function GrabSubject(code, year) {
 	// Make sure they entered a code:
-	if(code == '') {
+	if (code == '') {
 		$('#subjectError').html('<font color="red">You have to enter a code!</font>');
 		return false;
 	}
@@ -113,15 +113,15 @@ function GrabSubject(code, year) {
 
 	// Check if that subject has already been added:
 	var quit = false;
-	$('.subjectStore').each(function() {
-		if($(this).attr('code') == code) {
+	$('.subjectStore').each(function () {
+		if ($(this).attr('code') == code) {
 			quit = true;
 			return false;
 		}
 	});
 
 	// If we already have this subject:
-	if(quit) {
+	if (quit) {
 		$('#subjectError').html('<font color="red">This subject is already in the list!</font>');
 		return false;
 	}
@@ -129,151 +129,160 @@ function GrabSubject(code, year) {
 	// Tell the user we are searching:
 	$('#subjectError').html('<font color="green">Searching for subject...</font>');
 
-	// Grab the subject:
-	$.getJSON('timetable/'+year+'/'+code+'.json', function(data) {
-		if(data[0] == 'error') {
+
+	GetTimetable(code,year,function(data){
+
+		console.log(data);
+		// Grab the subject:
+		if (data[0] == 'error') {
 			// Show the failure message:
-			$('#subjectError').html('<font color="red">'+data[1]+'</font>');
+			$('#subjectError').html('<font color="red">' + data[1] + '</font>');
 		} else {
 			// Build a list of semesters:
 			var sems = '';
-			for(var i=0; i<data.data.length; i++) {
-				sems += '<option value="'+data.data[i].sem+'">'+data.data[i].sem+'</option>';
+			for (var i = 0; i < data.data.length; i++) {
+				sems += '<option value="' + data.data[i].sem + '">' + data.data[i].sem + '</option>';
 			}
-
+	
 			// Build the subject:
-			var s = $('<tr code="'+data.code+'" class="subjectStore"></tr>');
+			var s = $('<tr code="' + data.code + '" class="subjectStore"></tr>');
 			$('#subjectTable').append(s);
-
+	
 			// Build the sub category:
 			var sub2 = $('<tr style="display:none;"></tr>');
 			$('#subjectTable').append(sub2);
-
-			var sub = $('<td colspan="9" class="subList">'+data.code+'</td>');
+	
+			var sub = $('<td colspan="9" class="subList">' + data.code + '</td>');
 			sub2.append(sub);
-
+	
 			// Store the sub:
 			s.data('sub', sub);
-
+	
 			// Add the expand button:
 			var td = $('<td></td>');
 			ExpandButton(td, sub2);
 			s.append(td);
-
+	
 			// Add subject code:
-			s.append('<td>'+data.code+'</td>');
-
+			s.append('<td>' + data.code + '</td>');
+	
 			// Add subject name:
-			s.append('<td>'+data.name+'</td>');
-
+			s.append('<td>' + data.name + '</td>');
+	
 			// Add subject year:
-			s.append('<td>'+year+'</td>');
-
+			s.append('<td>' + year + '</td>');
+	
 			// Add selector:
 			var td = $('<td></td>');
 			s.append(td);
-			var sel = $('<select>'+sems+'</select>');
+			var sel = $('<select>' + sems + '</select>');
 			td.append(sel);
-
+	
 			// When the select box changes:
-			sel.change(function() {
+			sel.change(function () {
 				BuildAttendList(s);
 			});
-
+	
 			// Ensure we have a store for this subject:
-			if(!subjectcolors[data.name]) {
+			if (!subjectcolors[data.name]) {
 				// Grab default colors:
 				subjectcolors[data.name] = colors[colorupto];
-
+	
 				// Move onto next color:
 				colorupto += 1;
-
-				if(colorupto >= colors.length) {
+	
+				if (colorupto >= colors.length) {
 					colorupto = 0;
 				}
 			}
-
+	
 			// Add color picker BG:
 			var td = $('<td></td>');
 			s.append(td);
-			var cs = $('<p style="background-image:url(/images/select.png);width:16px;height:16px;background-color:'+subjectcolors[data.name].bg+';">&nbsp;</p>');
+			var cs = $('<p style="background-image:url(images/select.png);width:16px;height:16px;background-color:' + subjectcolors[data.name].bg + ';">&nbsp;</p>');
 			td.append(cs);
-
+	
 			// Color picker:
-			cs.ColorPicker({onChange:function(c, color) {
-				subjectcolors[data.name].bg = '#'+color;
-				cs.css('background-color', '#'+color);
-			}, color:subjectcolors[data.name].bg});
-
+			cs.ColorPicker({
+				onChange: function (c, color) {
+					subjectcolors[data.name].bg = '#' + color;
+					cs.css('background-color', '#' + color);
+				}, color: subjectcolors[data.name].bg
+			});
+	
 			// Add color picker TXT:
 			var td = $('<td></td>');
 			s.append(td);
-			var cs2 = $('<p style="background-image:url(/images/select.png);width:16px;height:16px;background-color:'+subjectcolors[data.name].txt+';">&nbsp;</p>');
+			var cs2 = $('<p style="background-image:url(images/select.png);width:16px;height:16px;background-color:' + subjectcolors[data.name].txt + ';">&nbsp;</p>');
 			td.append(cs2);
-
+	
 			// Color picker:
-			cs2.ColorPicker({onChange:function(c, color) {
-				subjectcolors[data.name].txt = '#'+color;
-				cs2.css('background-color', '#'+color);
-			}, color:subjectcolors[data.name].txt});
-
+			cs2.ColorPicker({
+				onChange: function (c, color) {
+					subjectcolors[data.name].txt = '#' + color;
+					cs2.css('background-color', '#' + color);
+				}, color: subjectcolors[data.name].txt
+			});
+	
 			// Add a toggle button:
 			var td = $('<td></td>');
-			var btn = ToggleButton(td, s, 'build', function(state, args) {
+			var btn = ToggleButton(td, s, 'build', function (state, args) {
 				// If we are trying to turn the button on:
-				if(state) {
+				if (state) {
 					// Check if I have all my childen off:
 					var allOff = true;
-					$('.subjectSort', $(args)).each(function(index) {
-						if($($(this).data('button')).data('state')) {
+					$('.subjectSort', $(args)).each(function (index) {
+						if ($($(this).data('button')).data('state')) {
 							allOff = false;
 						}
 					});
-
+	
 					// Stop the press:
-					if(allOff) {
+					if (allOff) {
 						return true;
 					}
 				}
 			}, sub);
 			s.append(td);
-
+	
 			// Store the button onto s:
 			s.data('button', btn);
-
+	
 			// Add delete button:
 			var td = $('<td></td>');
 			DeleteButton(td, new Array(s, sub));
 			s.append(td);
-
+	
 			// Add overflow buffer:
 			s.append('<td class="fill"></td>');
-
+	
 			// Code needed:
 			var code = data.code;
-
+	
 			// Create new array to write subjects to:
 			subjects[data.code] = new Array()
-
+	
 			// Create index by subjects[code][semester]:
-			for(var i=0;i<data.data.length;i++) {
+			for (var i = 0; i < data.data.length; i++) {
 				// Store the data:
 				subjects[data.code][data.data[i].sem] = data.data[i].data;
 			}
-
+	
 			// Store the name:
 			subjects[data.code].name = data.name;
-
+	
 			// Build dependancy list:
 			BuildAttendList(s);
-
+	
 			// Clear the entry field:
 			$('#subjectCode').val('');
-
+	
 			// Reset the error thingo:
 			$('#subjectError').html('');
 		}
 	});
+
+
 }
 
 // An array of classes to attend:
@@ -288,9 +297,9 @@ function TtCreate() {
 	timetableTemp = new Array();
 
 	// Build a slot for each day:
-	for(var i=0;i<days.length;i++) {
+	for (var i = 0; i < days.length; i++) {
 		timetableTemp[i] = {
-			n:1
+			n: 1
 		};
 	}
 
@@ -316,40 +325,40 @@ function TtAdd(name, sort, d) {
 	d.time = parseInt(d.time);
 
 	// Update the start time:
-	if(d.time < timetableTemp.start) {
+	if (d.time < timetableTemp.start) {
 		timetableTemp.start = d.time;
 	}
 
 	// Update end time:
-	if(d.time+d.len*4 > timetableTemp.end) {
-		timetableTemp.end = d.time+d.len*4;
+	if (d.time + d.len * 4 > timetableTemp.end) {
+		timetableTemp.end = d.time + d.len * 4;
 	}
 
-	for(var i=0;i<d.len*4;i++) {
+	for (var i = 0; i < d.len * 4; i++) {
 		// Check if this time slot already exists:
-		if(timetableTemp[d.day][d.time+i]) {
+		if (timetableTemp[d.day][d.time + i]) {
 			// Change the slot number:
-			if(slot < timetableTemp[d.day][d.time+i].length) {
-				slot = timetableTemp[d.day][d.time+i].length;
+			if (slot < timetableTemp[d.day][d.time + i].length) {
+				slot = timetableTemp[d.day][d.time + i].length;
 			}
 		} else {
 			// Create it:
-			timetableTemp[d.day][d.time+i] = new Array();
+			timetableTemp[d.day][d.time + i] = new Array();
 		}
 	}
 
 	// Store that there is a class starting here:
 	timetableTemp.times[d.time] = true;
-	timetableTemp.times[d.time+d.len*4] = true;
+	timetableTemp.times[d.time + d.len * 4] = true;
 
 	// Update n:
-	if(slot+1 > timetableTemp[d.day].n) {
-		timetableTemp[d.day].n = slot+1;
+	if (slot + 1 > timetableTemp[d.day].n) {
+		timetableTemp[d.day].n = slot + 1;
 	}
 
 	// Workout color:
-	if(!timetableTemp.colors[name]) {
-		if(subjectcolors[name]) {
+	if (!timetableTemp.colors[name]) {
+		if (subjectcolors[name]) {
 			timetableTemp.colors[name] = subjectcolors[name];
 		} else {
 			// Cycle colours:
@@ -357,8 +366,8 @@ function TtAdd(name, sort, d) {
 			timetableTemp.tColors += 1;
 
 			// Stop overflow:
-			if(timetableTemp.tColors >= colors.length) {
-				timetableTemp.tColors = colors.length-1;
+			if (timetableTemp.tColors >= colors.length) {
+				timetableTemp.tColors = colors.length - 1;
 			}
 		}
 	}
@@ -367,45 +376,45 @@ function TtAdd(name, sort, d) {
 	var color = timetableTemp.colors[name];
 
 	// If there are no clashes:
-	if(slot == 0) {
+	if (slot == 0) {
 		// Insert into timetable array:
-		timetableTemp[d.day][d.time][slot] = '<div class="bTop" style="background-color:'+color.bg+';color:'+color.txt+';">'+name+'</div>';
-		timetableTemp[d.day][d.time+1][slot] = '<div class="bLR">'+sort+'</div>';
-		timetableTemp[d.day][d.time+2][slot] = '<div class="bLR">'+d.loc[0].b+'</div>';
+		timetableTemp[d.day][d.time][slot] = '<div class="bTop" style="background-color:' + color.bg + ';color:' + color.txt + ';">' + name + '</div>';
+		timetableTemp[d.day][d.time + 1][slot] = '<div class="bLR">' + sort + '</div>';
+		timetableTemp[d.day][d.time + 2][slot] = '<div class="bLR">' + d.loc[0].b + '</div>';
 
-		if(d.len == 1) {
-			timetableTemp[d.day][d.time+3][slot] = '<div class="bBot">'+d.loc[0].r+'</div>';
+		if (d.len == 1) {
+			timetableTemp[d.day][d.time + 3][slot] = '<div class="bBot">' + d.loc[0].r + '</div>';
 		} else {
-			timetableTemp[d.day][d.time+3][slot] = '<div class="bLR">'+d.loc[0].r+'</div>';
+			timetableTemp[d.day][d.time + 3][slot] = '<div class="bLR">' + d.loc[0].r + '</div>';
 		}
 
-		for(var i=4;i<d.len*4-1;i++) {
-			timetableTemp[d.day][d.time+i][slot] = '<div class="bLR">&nbsp;</div>';
+		for (var i = 4; i < d.len * 4 - 1; i++) {
+			timetableTemp[d.day][d.time + i][slot] = '<div class="bLR">&nbsp;</div>';
 		}
 
-		if(d.len > 1) {
-			timetableTemp[d.day][d.time+i][slot] = '<div class="bBot">&nbsp;</div>';
+		if (d.len > 1) {
+			timetableTemp[d.day][d.time + i][slot] = '<div class="bBot">&nbsp;</div>';
 		}
 	} else {
 		// If there are clashes:
 
 		// Insert into timetable array:
-		timetableTemp[d.day][d.time][slot] = '<div class="bTopClash" style="background-color:'+color.bg+';color:'+color.txt+';">'+name+'</div>';
-		timetableTemp[d.day][d.time+1][slot] = '<div class="bLRClash">'+sort+'</div>';
-		timetableTemp[d.day][d.time+2][slot] = '<div class="bLRClash">'+d.loc[0].b+'</div>';
+		timetableTemp[d.day][d.time][slot] = '<div class="bTopClash" style="background-color:' + color.bg + ';color:' + color.txt + ';">' + name + '</div>';
+		timetableTemp[d.day][d.time + 1][slot] = '<div class="bLRClash">' + sort + '</div>';
+		timetableTemp[d.day][d.time + 2][slot] = '<div class="bLRClash">' + d.loc[0].b + '</div>';
 
-		if(d.len == 1) {
-			timetableTemp[d.day][d.time+3][slot] = '<div class="bBotClash">'+d.loc[0].r+'</div>';
+		if (d.len == 1) {
+			timetableTemp[d.day][d.time + 3][slot] = '<div class="bBotClash">' + d.loc[0].r + '</div>';
 		} else {
-			timetableTemp[d.day][d.time+3][slot] = '<div class="bLRClash">'+d.loc[0].r+'</div>';
+			timetableTemp[d.day][d.time + 3][slot] = '<div class="bLRClash">' + d.loc[0].r + '</div>';
 		}
 
-		for(var i=4;i<d.len*4-1;i++) {
-			timetableTemp[d.day][d.time+i][slot] = '<div class="bLRClash">&nbsp;</div>';
+		for (var i = 4; i < d.len * 4 - 1; i++) {
+			timetableTemp[d.day][d.time + i][slot] = '<div class="bLRClash">&nbsp;</div>';
 		}
 
-		if(d.len > 1) {
-			timetableTemp[d.day][d.time+i][slot] = '<div class="bBotClash">&nbsp;</div>';
+		if (d.len > 1) {
+			timetableTemp[d.day][d.time + i][slot] = '<div class="bBotClash">&nbsp;</div>';
 		}
 	}
 }
@@ -413,12 +422,12 @@ function TtAdd(name, sort, d) {
 // Renders a timetable into div:
 function TtRender(num) {
 	// Ensure this data point exists:
-	if(!permData[num-1]) {
+	if (!permData[num - 1]) {
 		return;
 	}
 
 	// Grab the actual num:
-	num = permData[num-1].num;
+	num = permData[num - 1].num;
 
 	// Create a new timetable:
 	TtCreate();
@@ -427,14 +436,14 @@ function TtRender(num) {
 
 	// Grab the current permutation:
 	var s = 1;
-	for(var i=toAttend.length-1;i>=0;i--) {
-		upto[i] = Math.floor(((num)/s)%toAttend[i].ns);
+	for (var i = toAttend.length - 1; i >= 0; i--) {
+		upto[i] = Math.floor(((num) / s) % toAttend[i].ns);
 		s *= toAttend[i].ns;
 	}
 
 	// Add all the classes:
-	for(var i=toAttend.length-1;i>=0;i--) {
-		for(var j=0;j<toAttend[i].length;j++) {
+	for (var i = toAttend.length - 1; i >= 0; i--) {
+		for (var j = 0; j < toAttend[i].length; j++) {
 			var z = toAttend[i][j][upto[i]];
 			z.len = toAttend[i][j].duration;
 
@@ -452,23 +461,23 @@ function TtRender(num) {
 	html += '<tr>';
 
 	// First time:
-	html += '<td class="leftBar" rowspan="'+(timetableTemp.end-timetableTemp.start+2)+'"><div style="height:1px;">';
+	html += '<td class="leftBar" rowspan="' + (timetableTemp.end - timetableTemp.start + 2) + '"><div style="height:1px;">';
 
-	for(var i=timetableTemp.start;i<timetableTemp.end+1;i++) {
-		if(timetableTemp.times[i]) {
-			html += '<div class="lTime">'+GetPrintTime(times[i])+'</div>';
+	for (var i = timetableTemp.start; i < timetableTemp.end + 1; i++) {
+		if (timetableTemp.times[i]) {
+			html += '<div class="lTime">' + GetPrintTime(times[i]) + '</div>';
 		} else {
-			html += '<div class="llTime">'+GetPrintTime(times[i])+'</div>';
+			html += '<div class="llTime">' + GetPrintTime(times[i]) + '</div>';
 		}
 	}
 
 	html += '</div></td>';
 
-	for(var i=0;i<days.length;i++) {
-		if(permData[num][i] && permData[num][i].activities > 0) {
-			html += '<td class="tDay" align="center" colspan="'+timetableTemp[i].n+'">'+days[i]+'</td>';
+	for (var i = 0; i < days.length; i++) {
+		if (permData[num][i] && permData[num][i].activities > 0) {
+			html += '<td class="tDay" align="center" colspan="' + timetableTemp[i].n + '">' + days[i] + '</td>';
 		} else {
-			html += '<td class="tDayFadded" align="center">'+days[i]+'</td>';
+			html += '<td class="tDayFadded" align="center">' + days[i] + '</td>';
 		}
 		/*for(var j=1;j<timetableTemp[i].n;j++) {
 			html += '<td></td>';
@@ -478,24 +487,24 @@ function TtRender(num) {
 	html += '</tr>';
 
 	// Cycle times:
-	for(var i=timetableTemp.start;i<timetableTemp.end+1;i++) {
+	for (var i = timetableTemp.start; i < timetableTemp.end + 1; i++) {
 		html += '<tr>';
 
 		// Cycle days:
-		for(var j=0;j<days.length;j++) {
-			if(timetableTemp[j]) {
+		for (var j = 0; j < days.length; j++) {
+			if (timetableTemp[j]) {
 				var d = timetableTemp[j][i];
 
-				if(d) {
-					for(var k=0;k<timetableTemp[j].n;k++) {
-						if(d[k]) {
-							html += '<td>'+d[k]+'</td>';
+				if (d) {
+					for (var k = 0; k < timetableTemp[j].n; k++) {
+						if (d[k]) {
+							html += '<td>' + d[k] + '</td>';
 						} else {
 							html += '<td class="line">&nbsp;</td>';
 						}
 					}
 				} else {
-					for(var k=0;k<timetableTemp[j].n;k++) {
+					for (var k = 0; k < timetableTemp[j].n; k++) {
 						html += '<td class="line">&nbsp;</td>';
 					}
 				}
@@ -525,9 +534,9 @@ function PrintableWindow() {
 	html += '</body></html>';
 
 	// Make the window:
-	var w = window.open('','timetable', 'resizable=1');
+	var w = window.open('', 'timetable', 'resizable=1');
 	w.moveTo(0, 0);
-	w.resizeTo(screen.width,screen.height);
+	w.resizeTo(screen.width, screen.height);
 	w.document.writeln(html);
 	w.document.close();
 
@@ -538,9 +547,9 @@ function PrintableWindow() {
 var filters = new Array()
 
 filters.push({
-	txt:'Total Clashes',
-	fnc:function(a, b, up) {
-		if(up) {
+	txt: 'Total Clashes',
+	fnc: function (a, b, up) {
+		if (up) {
 			return a.totalClashes - b.totalClashes;
 		} else {
 			return b.totalClashes - a.totalClashes;
@@ -549,9 +558,9 @@ filters.push({
 })
 
 filters.push({
-	txt:'Total Days',
-	fnc:function(a, b, up) {
-		if(up) {
+	txt: 'Total Days',
+	fnc: function (a, b, up) {
+		if (up) {
 			return a.totalDays - b.totalDays;
 		} else {
 			return b.totalDays - a.totalDays;
@@ -560,9 +569,9 @@ filters.push({
 })
 
 filters.push({
-	txt:'Total Hours',
-	fnc:function(a, b, up) {
-		if(up) {
+	txt: 'Total Hours',
+	fnc: function (a, b, up) {
+		if (up) {
 			return a.totalHours - b.totalHours;
 		} else {
 			return b.totalHours - a.totalHours
@@ -571,9 +580,9 @@ filters.push({
 })
 
 filters.push({
-	txt:'Earliest Start',
-	fnc:function(a, b, up) {
-		if(up) {
+	txt: 'Earliest Start',
+	fnc: function (a, b, up) {
+		if (up) {
 			return b.earliest - a.earliest;
 		} else {
 			return a.earliest - b.earliest;
@@ -582,9 +591,9 @@ filters.push({
 })
 
 filters.push({
-	txt:'Latest Finish',
-	fnc:function(a, b, up) {
-		if(up) {
+	txt: 'Latest Finish',
+	fnc: function (a, b, up) {
+		if (up) {
 			return a.latest - b.latest;
 		} else {
 			return b.latest - a.latest;
@@ -593,12 +602,12 @@ filters.push({
 })
 
 filters.push({
-	txt:'Longest Day',
-	fnc:function(a, b, up) {
-		if(up) {
-			return (a.latest-a.earliest) - (b.latest-b.earliest);
+	txt: 'Longest Day',
+	fnc: function (a, b, up) {
+		if (up) {
+			return (a.latest - a.earliest) - (b.latest - b.earliest);
 		} else {
-			return (b.latest-b.earliest) - (a.latest-a.earliest);
+			return (b.latest - b.earliest) - (a.latest - a.earliest);
 		}
 	}
 })
@@ -612,7 +621,7 @@ function TtGenerate() {
 	var upto = new Array();
 
 	// Calculate permutations:
-	for(var i=toAttend.length-1;i>=0;i--) {
+	for (var i = toAttend.length - 1; i >= 0; i--) {
 		// Set state:
 		upto[i] = 0;
 
@@ -626,14 +635,14 @@ function TtGenerate() {
 	var allowClashes = true;
 
 	// Allow clashes:
-	if(tp < 5000) {
+	if (tp < 5000) {
 		allowClashes = true;
 	}
 
 	var first = false;
 
-	while(true){
-		if(!first) {
+	while (true) {
+		if (!first) {
 			// Allow clashes:
 			allowClashes = true;
 		}
@@ -642,16 +651,16 @@ function TtGenerate() {
 		permData = new Array();
 
 		// Generate every timetable:
-		while(totalGenerated < tp) {
+		while (totalGenerated < tp) {
 			var p = {};
 
 			var pclash = new Array();
 
-			for(var i=0;i<days.length;i++) {
+			for (var i = 0; i < days.length; i++) {
 				p[i] = {
-					activities:0,
-					latest:-1,
-					earliest:-1
+					activities: 0,
+					latest: -1,
+					earliest: -1
 				};
 
 				pclash[i] = new Array();
@@ -663,20 +672,20 @@ function TtGenerate() {
 			var clashed = false;
 			var clashi = 0;
 
-		innerloop:
+			innerloop:
 			//for(var i=toAttend.length-1;i>=0;i--) {
-			for(var i=0;i<toAttend.length;i++) {
-				for(var j=0;j<toAttend[i].length;j++) {
+			for (var i = 0; i < toAttend.length; i++) {
+				for (var j = 0; j < toAttend[i].length; j++) {
 					var z = toAttend[i][j][upto[i]];
 					var dur = toAttend[i][j].duration;
 
 					// Calculate clashes:
-					for(var k=0;k<dur*4;k++) {
-						if(pclash[z.day][z.time+k]) {
+					for (var k = 0; k < dur * 4; k++) {
+						if (pclash[z.day][z.time + k]) {
 							// There was a clash:
 							p.totalClashes += 1;
 
-							if(!allowClashes) {
+							if (!allowClashes) {
 								// There was a clash:
 								clashed = true;
 								clashi = i;
@@ -686,17 +695,17 @@ function TtGenerate() {
 						}
 
 						// Store that there is a class here:
-						pclash[z.day][z.time+k] = true;
+						pclash[z.day][z.time + k] = true;
 					}
 
 					// Update earliest class:
-					if(p[z.day].earliest > z.time || p[z.day].earliest == -1) {
+					if (p[z.day].earliest > z.time || p[z.day].earliest == -1) {
 						p[z.day].earliest = z.time;
 					}
 
 					// Update latest class:
-					if(p[z.day].latest < z.time+dur*4 || p[z.day].latest == -1) {
-						p[z.day].latest = z.time+dur*4;
+					if (p[z.day].latest < z.time + dur * 4 || p[z.day].latest == -1) {
+						p[z.day].latest = z.time + dur * 4;
 					}
 
 					// Add to the total activities on that day:
@@ -708,30 +717,30 @@ function TtGenerate() {
 			}
 
 			// If we didn't clash:
-			if(!clashed) {
+			if (!clashed) {
 				p.totalDays = 0;
 				p.earliest = -1;
 				p.latest = -1;
 				p.totalHours = 0;
 
 				// Workout useful info:
-				for(var i=0;i<days.length;i++) {
-					if(p[i].activities > 0) {
+				for (var i = 0; i < days.length; i++) {
+					if (p[i].activities > 0) {
 						// Total days:
 						p.totalDays += 1;
 
 						// Earliest class:
-						if(p.earliest > p[i].earliest || p.earliest == -1) {
+						if (p.earliest > p[i].earliest || p.earliest == -1) {
 							p.earliest = p[i].earliest;
 						}
 
 						// Latest class:
-						if(p.latest < p[i].latest || p.latest == -1) {
+						if (p.latest < p[i].latest || p.latest == -1) {
 							p.latest = p[i].latest;
 						}
 
 						// Total hours:
-						p.totalHours += (p[i].latest-p[i].earliest)
+						p.totalHours += (p[i].latest - p[i].earliest)
 					}
 				}
 
@@ -739,12 +748,12 @@ function TtGenerate() {
 				permData.push(p);
 
 				// Roll onto the next permutation:
-				var i = toAttend.length-1;
-				while(i >= 0) {
+				var i = toAttend.length - 1;
+				while (i >= 0) {
 					upto[i] += 1;
 
 					// Check for overflow:
-					if(upto[i] >= toAttend[i].ns) {
+					if (upto[i] >= toAttend[i].ns) {
 						// Reset, move onto next element:
 						upto[i] = 0;
 						i -= 1;
@@ -760,25 +769,25 @@ function TtGenerate() {
 				// We found a clash, skip impossible times:
 
 				upto[clashi] += 1;
-				if(upto[clashi] >= toAttend[clashi].ns) {
+				if (upto[clashi] >= toAttend[clashi].ns) {
 					// If we are at the start:
-					if(clashi == 0) {
+					if (clashi == 0) {
 						totalGenerated = tp;
 						break;
 					}
 
 					// Decrease up the chain:
-					var cn = clashi-1;
+					var cn = clashi - 1;
 
 					upto[cn] += 1;
 
-					while(cn >= 0 && upto[cn] >= toAttend[cn].ns) {
+					while (cn >= 0 && upto[cn] >= toAttend[cn].ns) {
 						upto[cn] = 0;
 						cn -= 1;
 						upto[cn] += 1;
 					}
 
-					if(cn < 0) {
+					if (cn < 0) {
 						totalGenerated = tp;
 						break;
 					}
@@ -787,14 +796,14 @@ function TtGenerate() {
 					upto[clashi] = 0;
 				}
 
-				for(var i=clashi+1;i<toAttend.length;i++) {
+				for (var i = clashi + 1; i < toAttend.length; i++) {
 					upto[i] = 0;
 				}
 
 				totalGenerated = 0;
 				var n = 1;
 
-				for(var i=toAttend.length-1;i>=0;i--) {
+				for (var i = toAttend.length - 1; i >= 0; i--) {
 					totalGenerated += upto[i] * n;
 					n *= toAttend[i].ns;
 				}
@@ -802,7 +811,7 @@ function TtGenerate() {
 		}
 
 		// Results?
-		if(permData.length > 0 || !first) {
+		if (permData.length > 0 || !first) {
 			// Yep:
 			break;
 		} else {
@@ -818,8 +827,8 @@ function TtGenerate() {
 	var sa = $('<ul></ul>');
 	sorter.append(sa);
 
-	for(var i=0;i<filters.length;i++) {
-		var f = $('<li>'+filters[i].txt+'</li>');
+	for (var i = 0; i < filters.length; i++) {
+		var f = $('<li>' + filters[i].txt + '</li>');
 		f.data('num', i);
 		sa.append(f);
 
@@ -837,42 +846,44 @@ function TtGenerate() {
 	bc.upto = 1;
 	bc.total = permData.length;
 
-	if(bc.total == 0) {
+	if (bc.total == 0) {
 		bc.upto = 0;
 	}
 
 	var slider = $('<div id="slideContainer"></div>')
 	bc.append(slider);
-	slider.slider({min:bc.upto, max:bc.total, step:1, slide: function( event, ui ) {
-		// Change what we are upto:
-		bc.upto = ui.value;
+	slider.slider({
+		min: bc.upto, max: bc.total, step: 1, slide: function (event, ui) {
+			// Change what we are upto:
+			bc.upto = ui.value;
 
-		// Update the text:
-		cn.html("Viewing timetable "+bc.upto+"/"+bc.total);
+			// Update the text:
+			cn.html("Viewing timetable " + bc.upto + "/" + bc.total);
 
-		// Render the new timetable:
-		TtRender(bc.upto);
-	}});
+			// Render the new timetable:
+			TtRender(bc.upto);
+		}
+	});
 
 	var cn = $('<div id="browseUpto"></div>')
 	bc.append(cn);
 
-	cn.html("Viewing timetable "+1+"/"+bc.total);
+	cn.html("Viewing timetable " + 1 + "/" + bc.total);
 
 	// Build prev button:
 	var prev = $('<input type="button" value="Previous">')
 	bc.append(prev);
-	prev.click(function() {
+	prev.click(function () {
 		bc.upto -= 1;
 
-		if(bc.upto <= 0) {
+		if (bc.upto <= 0) {
 			bc.upto = bc.total;
 		}
 
 		slider.slider('value', bc.upto);
 
 		// Update the text:
-		cn.html("Viewing timetable "+bc.upto+"/"+bc.total);
+		cn.html("Viewing timetable " + bc.upto + "/" + bc.total);
 
 		// Render the new timetable:
 		TtRender(bc.upto);
@@ -881,17 +892,17 @@ function TtGenerate() {
 	// Build next button:
 	var next = $('<input type="button" value="Next">')
 	bc.append(next);
-	next.click(function() {
+	next.click(function () {
 		bc.upto += 1;
 
-		if(bc.upto > bc.total) {
+		if (bc.upto > bc.total) {
 			bc.upto = 1;
 		}
 
 		slider.slider('value', bc.upto);
 
 		// Update the text:
-		cn.html("Viewing timetable "+bc.upto+"/"+bc.total);
+		cn.html("Viewing timetable " + bc.upto + "/" + bc.total);
 
 		// Render the new timetable:
 		TtRender(bc.upto);
@@ -900,25 +911,25 @@ function TtGenerate() {
 	// Add a sort button:
 	var sortButton = $('<input type="button" value="Sort">')
 	sorter.append(sortButton);
-	sortButton.click(function() {
+	sortButton.click(function () {
 		// Stores the order in which to apply filters:
 		var forder = new Array();
 
-		$('li', sa).each(function() {
+		$('li', sa).each(function () {
 			forder.push({
-				num:$(this).data('num'),
-				up:$(this).data('up')
+				num: $(this).data('num'),
+				up: $(this).data('up')
 			});
 		});
 
 		// Sort the data:
-		permData.sort(function(a, b) {
-			for(var i=0; i<forder.length;i++) {
+		permData.sort(function (a, b) {
+			for (var i = 0; i < forder.length; i++) {
 				// Try this filter:
 				var r = filters[forder[i].num].fnc(a, b, forder[i].up);
 
 				// If it isn't the same:
-				if(r != 0) {
+				if (r != 0) {
 					// Return the number:
 					return r;
 				}
@@ -937,7 +948,7 @@ function TtGenerate() {
 
 	// Printable version link:
 	var link = $('<a href="#">Printable Version</a>');
-	link.click(function() {
+	link.click(function () {
 		PrintableWindow();
 	});
 
@@ -961,7 +972,7 @@ function ToggleButton(buttonStore, dataStore, varName, callback, args) {
 	btn.data('state', true);
 
 	// Allow button to toggle:
-	btn.click(function() {
+	btn.click(function () {
 		// Toggle build state:
 		dataStore.data(varName, !dataStore.data(varName));
 
@@ -969,9 +980,9 @@ function ToggleButton(buttonStore, dataStore, varName, callback, args) {
 		btn.data('state', dataStore.data(varName));
 
 		// Run the callback:
-		if(callback) {
+		if (callback) {
 			// If the callback returns true, toggle back:
-			if(callback(dataStore.data(varName), args)) {
+			if (callback(dataStore.data(varName), args)) {
 				// Toggle build state:
 				dataStore.data(varName, !dataStore.data(varName));
 			}
@@ -981,7 +992,7 @@ function ToggleButton(buttonStore, dataStore, varName, callback, args) {
 		btn.data('state', dataStore.data(varName));
 
 		// Toggle icon:
-		if(dataStore.data(varName)) {
+		if (dataStore.data(varName)) {
 			btn.attr('src', 'icons/tick.png');
 		} else {
 			btn.attr('src', 'icons/cross.png');
@@ -1001,12 +1012,12 @@ function AccendButton(buttonStore) {
 	buttonStore.data("up", true);
 
 	// Allow button to toggle:
-	btn.click(function() {
+	btn.click(function () {
 		// Toggle build state:
 		buttonStore.data("up", !buttonStore.data("up"));
 
 		// Toggle icon:
-		if(buttonStore.data("up")) {
+		if (buttonStore.data("up")) {
 			btn.attr('src', 'icons/arrow_up.png');
 		} else {
 			btn.attr('src', 'icons/arrow_down.png');
@@ -1025,12 +1036,12 @@ function ExpandButton(buttonStore, toExpand) {
 	btn.enabled = true;
 
 	// Allow button to toggle:
-	btn.click(function() {
+	btn.click(function () {
 		// Toggle build state:
 		btn.enabled = !btn.enabled;
 
 		// Toggle icon:
-		if(btn.enabled) {
+		if (btn.enabled) {
 			btn.attr('src', 'icons/add.png');
 			toExpand.hide();
 		} else {
@@ -1054,12 +1065,12 @@ function StreamButton(buttonStore, dataStore, varName, varName2) {
 	dataStore.data(varName, false);
 
 	// Allow button to toggle:
-	btn.click(function() {
+	btn.click(function () {
 		// Toggle build state:
 		dataStore.data(varName, !dataStore.data(varName));
 
 		// Toggle icon:
-		if(dataStore.data(varName)) {
+		if (dataStore.data(varName)) {
 			btn.attr('src', 'icons/lock.png');
 			toShow.show();
 		} else {
@@ -1068,18 +1079,18 @@ function StreamButton(buttonStore, dataStore, varName, varName2) {
 		}
 	});
 
-	toShow.pick = function(value) {
+	toShow.pick = function (value) {
 		// Change the selection:
 		$(this).val(value);
 
 		// Enable the stream if it's not already:
-		if(!dataStore.data(varName)) {
+		if (!dataStore.data(varName)) {
 			btn.click();
 		}
 	}
 
 	// When the stream is changed, store the new value:
-	toShow.change(function() {
+	toShow.change(function () {
 		dataStore.data(varName2, $(this).val());
 	});
 
@@ -1093,9 +1104,9 @@ function DeleteButton(buttonStore, toDelete) {
 	buttonStore.append(btn);
 
 	// Allow button to toggle:
-	btn.click(function() {
+	btn.click(function () {
 		// Remove items:
-		for(var i=0;i<toDelete.length;i++) {
+		for (var i = 0; i < toDelete.length; i++) {
 			toDelete[i].remove()
 		}
 	});
@@ -1108,22 +1119,22 @@ function CheckButtons(td) {
 	var allOff = true;
 
 	// Look at each other subject header:
-	$('.subjectSort', td.parent().parent()).each(function(index) {
-		if($($(this).data('button')).data('state')) {
+	$('.subjectSort', td.parent().parent()).each(function (index) {
+		if ($($(this).data('button')).data('state')) {
 			allOff = false;
 		}
 	});
 
 	// If they're all off:
-	if(allOff) {
+	if (allOff) {
 		// If the button is enabled:
-		if(btn2.data('state')) {
+		if (btn2.data('state')) {
 			// Disable it:
 			btn2.click();
 		}
 	} else {
 		// If the button is disabled:
-		if(!btn2.data('state')) {
+		if (!btn2.data('state')) {
 			// Enable it:
 			btn2.click();
 		}
@@ -1133,7 +1144,7 @@ function CheckButtons(td) {
 // Renders the total number of selected items:
 function RenderTotals(td) {
 	// (active/total)
-	td.html('('+td.data('active')+'/'+td.data('total')+')');
+	td.html('(' + td.data('active') + '/' + td.data('total') + ')');
 
 	// Store the data somewhere useful:
 	$(td).parent().data('active', td.data('active'));
@@ -1143,15 +1154,15 @@ function RenderTotals(td) {
 	var btn = $($(td).data('button'));
 
 	// Disable the button if no active classes:
-	if(td.data('active') <= 0) {
+	if (td.data('active') <= 0) {
 		// If the button is enabled:
-		if(btn.data('state')) {
+		if (btn.data('state')) {
 			// Disable it:
 			btn.click();
 		}
 	} else {
 		// If the button is disabled:
-		if(!btn.data('state')) {
+		if (!btn.data('state')) {
 			// Disable it:
 			btn.click();
 		}
@@ -1170,52 +1181,52 @@ function BuildAttendList(trMain) {
 	var l = new Array();
 
 	// Build list:
-	for(var i=0;i<subjects[code][sem].length;i++) {
+	for (var i = 0; i < subjects[code][sem].length; i++) {
 		// Grab the data:
 		var d = subjects[code][sem][i];
 
 		// Find the index for the day:
 		var daynum = -1;
-		for(var j=0;j<days.length;j++) {
-			if(days[j] == d[1]) {
+		for (var j = 0; j < days.length; j++) {
+			if (days[j] == d[1]) {
 				daynum = j;
 			}
 		}
 
-		if(daynum == -1) {
-			console.log('Failed to find day '+d[2]);
+		if (daynum == -1) {
+			console.log('Failed to find day ' + d[2]);
 			continue;
 		}
 
 		var sort = d[0].substr(0, d[0].indexOf('/'));
 
 		// Ensure this sort exists:
-		if(!l[sort]) {
+		if (!l[sort]) {
 			l[sort] = new Array();
 		}
 
 		// Workout unfriendly and friendly times:
-		var timeUF = d[2].substr(0,d[2].indexOf(' - ')).split(':');
-		var timeF = timeUF[0]*100 + parseInt(timeUF[1]);
+		var timeUF = d[2].substr(0, d[2].indexOf(' - ')).split(':');
+		var timeF = timeUF[0] * 100 + parseInt(timeUF[1]);
 
 		// Counter for am/pm:
-		if(timeUF[1].indexOf('pm') != -1) {
+		if (timeUF[1].indexOf('pm') != -1) {
 			timeF += 1200;
 		}
 		// Fix wrap around:
-		if(timeF >= 2400) {
+		if (timeF >= 2400) {
 			timeF -= 1200;
 		}
 
 		// Grab index of time:
 		var timeIndex = -1;
-		for(var j=0;j<times.length;j++) {
-			if(times[j] == timeF) {
+		for (var j = 0; j < times.length; j++) {
+			if (times[j] == timeF) {
 				timeIndex = j;
 			}
 		}
-		if(timeIndex == -1) {
-			console.log('Failed to find time '+timeF+' ('+timeUF+')');
+		if (timeIndex == -1) {
+			console.log('Failed to find time ' + timeF + ' (' + timeUF + ')');
 			continue;
 		}
 
@@ -1228,11 +1239,11 @@ function BuildAttendList(trMain) {
 
 		// Push the data on:
 		l[sort].push({
-			time:timeIndex,
-			day:daynum,
-			building:b[b.length-1],
-			loc:loc[1],
-			len:d[4]
+			time: timeIndex,
+			day: daynum,
+			building: b[b.length - 1],
+			loc: loc[1],
+			len: d[4]
 		});
 	}
 
@@ -1247,7 +1258,7 @@ function BuildAttendList(trMain) {
 	t.data('button', trMain.data('button'));
 
 	// Build the list of activities:
-	for(var sort in l) {
+	for (var sort in l) {
 		// Create a row for this activity:
 		var tr = $('<tr class="subjectSort"></tr>');
 		t.append(tr);
@@ -1277,7 +1288,7 @@ function BuildAttendList(trMain) {
 		tr.append(td);
 
 		// Add activity sort:
-		tr.append('<td>'+GetPrintSort(sort)+'</td>');
+		tr.append('<td>' + GetPrintSort(sort) + '</td>');
 
 		// Store the total:
 		var total = l[sort].length;
@@ -1289,16 +1300,16 @@ function BuildAttendList(trMain) {
 		tdTotals.data('active', total);
 
 		// Add how long it is:
-		tr.append('<td>'+GetPrintDuration(l[sort][0].len)+'</td>'); // Assumes uniform activity duration!
+		tr.append('<td>' + GetPrintDuration(l[sort][0].len) + '</td>'); // Assumes uniform activity duration!
 
 		// Create a toggle button:
 		var td = $('<td></td>');
 		tr.append(td);
-		var btn = ToggleButton(td, tr, 'build', function(state, args) {
+		var btn = ToggleButton(td, tr, 'build', function (state, args) {
 			// If the button is trying to be turned on:
-			if(state) {
+			if (state) {
 				// If no children are selected:
-				if(args[0].data('active') <= 0) {
+				if (args[0].data('active') <= 0) {
 					// Don't allow the button to be pressed:
 					return true;
 				}
@@ -1322,17 +1333,17 @@ function BuildAttendList(trMain) {
 		var stream = StreamButton(td, tr, 'state', 'stream');
 
 		// Add stream options:
-		for(var streamSort in l) {
-			if(sort != streamSort) {
-				stream.append('<option value="'+streamSort+'">'+GetPrintSort(streamSort)+'</option>');
+		for (var streamSort in l) {
+			if (sort != streamSort) {
+				stream.append('<option value="' + streamSort + '">' + GetPrintSort(streamSort) + '</option>');
 			}
 		}
 
 		var finished = false;
 
 		// Check if there is a good stream match for it:
-		$('.subjectSort', t).each(function(index) {
-			if(!finished && total == $(this).data('total') && sort != $(this).data('sort')) {
+		$('.subjectSort', t).each(function (index) {
+			if (!finished && total == $(this).data('total') && sort != $(this).data('sort')) {
 				// Pick the stream:
 				stream.pick($(this).data('sort'));		// We need to check the first data entry isn't a clash here!!!!
 				finished = true;
@@ -1346,7 +1357,7 @@ function BuildAttendList(trMain) {
 		tr.append('<td class="fill"></td>');
 
 		// Build the list of times:
-		for(var i=0;i<l[sort].length;i++) {
+		for (var i = 0; i < l[sort].length; i++) {
 			// Craete a row:
 			var tr = $('<tr class="subTime"></tr>');
 			t2.append(tr);
@@ -1358,26 +1369,26 @@ function BuildAttendList(trMain) {
 			tr.data('loc', l[sort][i].loc);
 
 			// Add the day:
-			tr.append('<td>'+days[l[sort][i].day]+'</td>')
+			tr.append('<td>' + days[l[sort][i].day] + '</td>')
 
 			// Add the time:
-			tr.append('<td>'+GetPrintTime(times[l[sort][i].time])+' - '+GetPrintTime(times[l[sort][i].time]+l[sort][i].len*100)+'</td>')
+			tr.append('<td>' + GetPrintTime(times[l[sort][i].time]) + ' - ' + GetPrintTime(times[l[sort][i].time] + l[sort][i].len * 100) + '</td>')
 
 			// Add Building:
-			tr.append('<td>'+l[sort][i].building+'</td>')
+			tr.append('<td>' + l[sort][i].building + '</td>')
 
 			// Add Location:
-			tr.append('<td>'+l[sort][i].loc+'</td>')
+			tr.append('<td>' + l[sort][i].loc + '</td>')
 
 			// Insert build button:
 			var td = $('<td></td>');
 			tr.append(td);
-			ToggleButton(td, tr, 'build', function(state, par) {
+			ToggleButton(td, tr, 'build', function (state, par) {
 				// Change the active number:
-				if(state) {
-					par.data('active', par.data('active')+1);
+				if (state) {
+					par.data('active', par.data('active') + 1);
 				} else {
-					par.data('active', par.data('active')-1);
+					par.data('active', par.data('active') - 1);
 				}
 
 				// Re render:
@@ -1389,38 +1400,40 @@ function BuildAttendList(trMain) {
 
 var subjects = {};
 
-$(document).ready(function(){
+$(document).ready(function () {
 	// Update year to be latest year
 	var now = new Date();
 	$('#subjectYear').val(now.getFullYear());
 
 	// Start getting subjects:
-	$.getJSON('subjects.json', function(data) {
+	$.getJSON('subjects.json', function (data) {
 		subjects = data;
 
 		// Add autocomplete:
-		$('#subjectCode').autocomplete({source:subjects, minLength:4, delay:0, select: function( event, ui ) {
-			GrabSubject(ui.item.label.split(' ')[0], $('#subjectYear').val());
-		}});
+		$('#subjectCode').autocomplete({
+			source: subjects, minLength: 4, delay: 0, select: function (event, ui) {
+				GrabSubject(ui.item.label.split(' ')[0], $('#subjectYear').val());
+			}
+		});
 	});
 
 	// Grab buttons:
-	$('#addSubject').click(function() {
+	$('#addSubject').click(function () {
 		GrabSubject($('#subjectCode').val().split(' ')[0], $('#subjectYear').val());
 	});
 
-	$('#test').click(function() {
+	$('#test').click(function () {
 		var r = $('#subjectTable tr');
 
 		// Reset the list of classes to attend:
 		toAttend = new Array();
 
-		r.each(function(index) {	// Comp10001, mast10007 etc
+		r.each(function (index) {	// Comp10001, mast10007 etc
 			// Grab the code:
 			var code = $(this).attr('code');
 
 			// Check code:
-			if(code && $($(this).data('button')).data('state')) {
+			if (code && $($(this).data('button')).data('state')) {
 				// Grab semester:
 				var sem = $(this).find('select').val();
 
@@ -1431,40 +1444,40 @@ $(document).ready(function(){
 
 				var sub = $($(this).data('sub'));
 
-				$('.subjectSort', sub).each(function() {	// Lecture 1, Lectre 2 etc
+				$('.subjectSort', sub).each(function () {	// Lecture 1, Lectre 2 etc
 					// If it is set to build:
-					if($(this).data('build')) {
+					if ($(this).data('build')) {
 						// New array to store these lecture times:
 						var d = new Array();
 
 						// Read in the data:
-						$('.subTime', $($(this).data('subTimes'))).each(function() {	// Monday 9:00am, Wednesday 12:00pm etc
+						$('.subTime', $($(this).data('subTimes'))).each(function () {	// Monday 9:00am, Wednesday 12:00pm etc
 							// Check if this time is set to build:
-							if($(this).data('build')) {
+							if ($(this).data('build')) {
 								var found = -1;
 
 								// Search the l array for dup times:
-								for(var i=0;i<d.length;i++) {
+								for (var i = 0; i < d.length; i++) {
 									// Same day + time:
-									if(d[i].day == $(this).data('day') && d[i].time == $(this).data('time')) {
+									if (d[i].day == $(this).data('day') && d[i].time == $(this).data('time')) {
 										found = i;
 										break;
 									}
 								}
 
-								if(found == -1) {
+								if (found == -1) {
 									d.push({
-										day:$(this).data('day'),
-										time:$(this).data('time'),
+										day: $(this).data('day'),
+										time: $(this).data('time'),
 										loc: new Array({
-											b:$(this).data('building'),
-											r:$(this).data('loc')
+											b: $(this).data('building'),
+											r: $(this).data('loc')
 										})
 									});
 								} else {
 									d[i].loc.push({
-										b:$(this).data('building'),
-										r:$(this).data('loc')
+										b: $(this).data('building'),
+										r: $(this).data('loc')
 									});
 								}
 							}
@@ -1475,7 +1488,7 @@ $(document).ready(function(){
 						d.duration = $(this).data('duration');
 
 						// Check if it is streamed:
-						if($(this).data('state')) {
+						if ($(this).data('state')) {
 							// Streamed, store what it is streamed to:
 							d.stream = $(this).data('stream');
 
@@ -1495,17 +1508,17 @@ $(document).ready(function(){
 				});
 
 				// Stick the streamed classes in:
-				for(i=0;i<ls.length;i++) {
+				for (i = 0; i < ls.length; i++) {
 					// Ensure the stream exists:
 					var key = lookup[ls[i].stream];
 
-					if(!key && key != 0) {
-						$('#subjectError').html('<font color="red">Stream loop error '+ls[i].stream+'</font>');
+					if (!key && key != 0) {
+						$('#subjectError').html('<font color="red">Stream loop error ' + ls[i].stream + '</font>');
 						return false;
 					}
 
 					// Take the lowest length:
-					if(ls[i].length < l[key].ns) {
+					if (ls[i].length < l[key].ns) {
 						l[key].ns = ls[i].length;
 					}
 
@@ -1514,14 +1527,14 @@ $(document).ready(function(){
 				}
 
 				// Insert the data:
-				for(i=0;i<l.length;i++) {
+				for (i = 0; i < l.length; i++) {
 					toAttend.push(l[i]);
 				}
 			}
 		});
 
 		// Sort by lowest number of choices to make:
-		toAttend.sort(function(a, b) {
+		toAttend.sort(function (a, b) {
 			return (a.ns - b.ns);
 		});
 

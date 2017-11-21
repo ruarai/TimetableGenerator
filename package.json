@@ -1,13 +1,15 @@
 {
-  "name": "TimetableGenerator",
+  "name": "timetable-gen-electron",
   "description": "Generates timetables for unimelb students",
   "version": "0.0.1",
   "private": true,
+  "main": "main.js",
   "dependencies": {
+    "cheerio": "*",
+    "electron-routes": "^1.3.0",
     "express": "3.x",
     "nodeunit": "*",
-    "request": "*",
-    "cheerio": "*"
+    "request": "*"
   },
   "devDependencies": {
     "electron": "1.7.9"
