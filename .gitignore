@@ -215,7 +215,7 @@ pip-log.txt
 .mr.developer.cfg
 
 #Timetable stuff
-static/timetable/*
+timetable/*
 
 #Node Modules
 node_modules/
