@@ -1,4 +1,4 @@
-Timetable Generatoreeee
+Timetable Generato
 =========
 
 ###About###
